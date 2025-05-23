@@ -17,7 +17,8 @@ public class Celula {
 
         // Create and style the rectangle
         celula = new Rectangle(minX, minY, width, height);
-        celula.setFill(novoValor == 0 ? Color.GRAY : Color.WHITE);
+        celula.setFill(novoValor == 0 ? Color.WHITE : Color.GRAY);
+        //celula.setFill(Color.GRAY);
         celula.setStroke(Color.BLACK);
 
         // Create the text node with the value
