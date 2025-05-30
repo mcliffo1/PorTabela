@@ -28,7 +28,7 @@ public class Scoreboard {
 
         // Position scoreboard at top left
         scoreboard.setLayoutX(150); // 20 px from left edge
-        scoreboard.setLayoutY(150); // 20 px from top edge
+        scoreboard.setLayoutY(300); // 20 px from top edge
 
         root.getChildren().add(scoreboard);
         
