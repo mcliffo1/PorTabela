@@ -1,11 +1,16 @@
 package mcliffo1;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import java.util.stream.Stream;
 
 public class Tabela {
     private AnchorPane root;
@@ -13,10 +18,12 @@ public class Tabela {
     private Random random;
     private List<String> colNames;
     private List<Celula> coluna;
+    private String name;
 
-    public Tabela(AnchorPane root) {
+    public Tabela(AnchorPane root, String name) {
         tabelaList = new ArrayList<>();
         this.root = root;
+        this.name = name;
     }
     
     //TODO: Dar valores aleatorios
@@ -52,11 +59,6 @@ public class Tabela {
         colNames.add("Length");
         colNames.add("Width");
         colNames.add("Shape");
-        colNames.add("1");
-        colNames.add("2");
-        colNames.add("3");
-        colNames.add("4");
-        colNames.add("5");
         // Make this better
 
         for (int i = 0; i < dimX; i++) {
@@ -77,6 +79,67 @@ public class Tabela {
             }
             tabelaList.add(coluna);
         }
+
+    }
+    public void tabelaFromList(int startX, int startY, int width, int height, List<String> colNamesInput,List<Integer> valores){
+        tabelaList = new ArrayList<>();
+        colNames = colNamesInput;
+        int Xpadding = 1;
+        int Ypadding = 1;
+        int dimY = (colNames.size() + valores.size()) / colNames.size();
+        for (int i = 0; i < colNames.size(); i++) {
+            int currentX = startX + i * (width + Xpadding);
+
+            List<Celula> coluna = new ArrayList<>();
+
+            for (int j = 0; j < dimY; j++) {
+                int currentY = startY + j * (height + Ypadding);
+                if(i < colNames.size() && j < 1){
+                    Celula celula = new Celula(currentX, currentY, width, height, root, colNames.get(i));
+                    coluna.add(celula);
+                }
+                else{
+                    Celula celula = new Celula(currentX, currentY, width, height, root, valores.get(i));
+                    coluna.add(celula);
+                }
+            }
+            tabelaList.add(coluna);
+        }
+    } // We are going to have to include abilities into this in the future
+
+
+    public void tabelaFromResultSet(ResultSet rs, AnchorPane root, int startX, int startY, int width, int height, String name) throws SQLException {
+        ResultSetMetaData meta = rs.getMetaData();
+        int colCount = meta.getColumnCount();
+
+        List<String> colNames = new ArrayList<>();
+        for (int i = 1; i <= colCount; i++) {
+            colNames.add(meta.getColumnName(i));
+        }
+
+        List<Integer> allVals = new ArrayList<>();
+        while (rs.next()) {
+            for (int i = 1; i <= colCount; i++) {
+                allVals.add(rs.getInt(i));
+            }
+        }
+
+        Tabela newTabela = new Tabela(root, name);
+        newTabela.tabelaFromList(startX, startY, width, height, colNames, allVals);
+    }
+
+
+    public void dropTables(){
+        List<List<Celula>> list = this.getList();
+        for(int i = 0; i < list.size(); i++){
+            List<Celula> coluna = list.get(i);
+            for(int j = 0; j < coluna.size(); j++){
+                root.getChildren().removeAll(coluna.get(j).getShape(), coluna.get(j).getText());
+                System.out.println(coluna.size());
+            }
+        }
+    }
+    public void saveTabelaInfo(){
 
     }
 
@@ -140,6 +203,11 @@ public class Tabela {
         return tabelaList;
     }
 
+    public void setList(List<List<Celula>> list){
+        tabelaList = list;
+    }
+
+
     public void removeRow(int rowNum) {
     // Validate row index
     if (rowNum < 0 || tabelaList.isEmpty() || rowNum >= tabelaList.get(0).size()) {
@@ -185,5 +253,10 @@ public void removeColumn(int colNum) {
     }
 }
 
+    public String getTableName(){
+        return name;
+    }
+
+    
 
 }
