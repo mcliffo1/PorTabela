@@ -5,6 +5,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 public class Scoreboard {
     private int score;
@@ -14,13 +16,13 @@ public class Scoreboard {
     private VBox scoreboard;
  
     Scoreboard(AnchorPane root){
-        VBox scoreboard = new VBox();
+        this.scoreboard = new VBox();
         scoreboard.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-padding: 10; -fx-background-radius: 8;");
         scoreboard.setPrefWidth(150);
 
-        int score = 0;
-        int threshold = 300;
-        Text scoreText = new Text(score + " / " + threshold);
+        this.score = 0;
+        this.threshold = 300;
+        this.scoreText = new Text(score + " / " + threshold);
         scoreText.setFill(Color.WHITE);
         scoreText.setFont(Font.font(18));
 
@@ -33,11 +35,43 @@ public class Scoreboard {
         root.getChildren().add(scoreboard);
         
     }
-    public void setScore(int newScore){
-        score = newScore;
+    public void setScore(int newScore) throws InterruptedException{
+        this.score = newScore;
         scoreText.setText(score + " / " + threshold);
+        this.roundWinCheck();
+        
+        //if(score > this.threshold){
+        //    this.setThreshold(threshold += score /2);
+        //}
         // scoreboard.getChildren().add(scoreText); Not sure if necessary or not.
     }
+
+
+
+public void roundWinCheck() {
+    if (this.score > this.threshold) {
+        this.scoreboard.setStyle("-fx-background-color: rgba(121, 249, 42, 0.6); -fx-padding: 10; -fx-background-radius: 8;");
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(event -> {
+            this.setThreshold(threshold + score / 2);
+            this.score = 0;
+            this.scoreText.setText(score + " / " + threshold);
+            scoreboard.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-padding: 10; -fx-background-radius: 8;");
+        });
+        pause.play();
+
+    } else {
+        this.scoreboard.setStyle("-fx-background-color: rgba(243, 49, 27, 0.6); -fx-padding: 10; -fx-background-radius: 8;");
+
+        PauseTransition pause = new PauseTransition(Duration.seconds(3));
+        pause.setOnFinished(event -> {
+            this.scoreText.setText("You lose. Score: " + score);
+
+        });
+        pause.play();
+    }
+}
 
     public int getScore(){
         return score;

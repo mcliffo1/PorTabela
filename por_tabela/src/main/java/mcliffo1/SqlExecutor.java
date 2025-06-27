@@ -14,34 +14,40 @@ public class SqlExecutor {
     private Tabela outputTable;
     private AnchorPane root;
     private TextArea sqlInput;
+private Scoreboard scoreboard;
 
-    public SqlExecutor(AnchorPane root) {
-        this.root = root;
-        try {
-            conn = DriverManager.getConnection("jdbc:h2:mem:");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        setupUI();
+public SqlExecutor(AnchorPane root, Scoreboard scoreboard) {
+    this.root = root;
+    this.scoreboard = scoreboard;
+    try {
+        conn = DriverManager.getConnection("jdbc:h2:mem:");
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    setupUI();
+}
+
 
     private void setupUI() {
         sqlInput = new TextArea();
         sqlInput.setPromptText("Type SQL query here...");
-        sqlInput.setLayoutX(50);
-        sqlInput.setLayoutY(50);
+        sqlInput.setLayoutX(100);
+        sqlInput.setLayoutY(690);
         sqlInput.setPrefWidth(600);
         sqlInput.setPrefHeight(100);
 
         Button runButton = new Button("Run SQL");
-        runButton.setLayoutX(660);
-        runButton.setLayoutY(50);
+        runButton.setLayoutX(710);
+        runButton.setLayoutY(690);
         runButton.setOnAction(e -> {
             String query = sqlInput.getText();
             try {
                 runQuery(query);
             } catch (SQLException ex) {
                 ex.printStackTrace();
+            } catch (InterruptedException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
             }
         });
 
@@ -93,7 +99,7 @@ public class SqlExecutor {
         return sb.toString();
     }
 
-    public void runQuery(String query) throws SQLException {
+    public void runQuery(String query) throws SQLException, InterruptedException {
         Statement stmt = conn.createStatement();
         boolean hasResultSet = stmt.execute(query);
 
@@ -119,14 +125,33 @@ public class SqlExecutor {
         }
 
         outputTable = new Tabela(root, "RESULT");
-        outputTable.tabelaFromList(800, 200, 60, 20, colNames, flatValues);
+        outputTable.tabelaFromList(500, 30, 60, 20, colNames, flatValues);
+        updateScoreFromResult();
     }
 
-    public void runQueryProgrammatically(String query) {
-        try {
-            runQuery(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public void updateScoreFromResult() throws InterruptedException {
+    if (outputTable == null) return;
+
+    List<List<Celula>> data = outputTable.getList();
+    int total = 0;
+
+    for (List<Celula> col : data) {
+        for (int i = 1; i < col.size(); i++) { // skip header
+            total += col.get(i).getValor();
         }
     }
+    
+        scoreboard.setScore(total);
+
+}
+
+
+
+    // public void runQueryProgrammatically(String query) {
+    //     try {
+    //         runQuery(query);
+    //     } catch (SQLException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 }

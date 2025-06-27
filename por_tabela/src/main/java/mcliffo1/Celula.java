@@ -53,6 +53,14 @@ public class Celula {
         root.getChildren().addAll(celula, texto);
     }
 
+    public void moveBy(double dx, double dy) {
+    celula.setX(celula.getX() + dx);
+    celula.setY(celula.getY() + dy);
+    texto.setX(texto.getX() + dx);
+    texto.setY(texto.getY() + dy);
+    }
+
+
     public void setValor(int novo) {
         valor = novo;
         texto.setText(String.valueOf(novo)); // Update text when value changes

@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+
 import java.util.stream.Stream;
 
 public class Tabela {
@@ -19,6 +22,9 @@ public class Tabela {
     private List<String> colNames;
     private List<Celula> coluna;
     private String name;
+    private double dragOffsetX;
+    private double dragOffsetY;
+    private Text tableLabel;
 
     public Tabela(AnchorPane root, String name) {
         tabelaList = new ArrayList<>();
@@ -60,6 +66,26 @@ public class Tabela {
         colNames.add("Width");
         colNames.add("Shape");
         // Make this better
+        
+        tableLabel = new Text(startX, startY - 10, name);
+        tableLabel.setFont(Font.font(16));
+        tableLabel.setFill(Color.DARKBLUE);
+        root.getChildren().add(tableLabel);
+
+        tableLabel.setOnMousePressed(event -> {
+    dragOffsetX = event.getSceneX();
+    dragOffsetY = event.getSceneY();
+    });
+
+    tableLabel.setOnMouseDragged(event -> {
+    double deltaX = event.getSceneX() - dragOffsetX;
+    double deltaY = event.getSceneY() - dragOffsetY;
+
+    dragOffsetX = event.getSceneX();
+    dragOffsetY = event.getSceneY();
+
+    moveTable(deltaX, deltaY);
+    });
 
         for (int i = 0; i < dimX; i++) {
             int currentX = startX + i * (width + Xpadding);
@@ -81,36 +107,92 @@ public class Tabela {
         }
 
     }
-    public void tabelaFromList(int startX, int startY, int width, int height, List<String> colNamesInput,List<Integer> valores){
-        tabelaList = new ArrayList<>();
-        colNames = colNamesInput;
-        int Xpadding = 1;
-        int Ypadding = 1;
-        int dimY = (colNames.size() + valores.size()) / colNames.size();
-        for (int i = 0; i < colNames.size(); i++) {
-            int currentX = startX + i * (width + Xpadding);
+    public void tabelaFromList(int startX, int startY, int width, int height, List<String> colNamesInput, List<Integer> valores) {
+    tabelaList = new ArrayList<>();
+    colNames = colNamesInput;
+    int Xpadding = 1;
+    int Ypadding = 1;
 
-            List<Celula> coluna = new ArrayList<>();
+    int numCols = colNames.size();
+    int numRows = (valores.size() / numCols) + 1; // +1 for header
 
-            for (int j = 0; j < dimY; j++) {
-                int currentY = startY + j * (height + Ypadding);
-                if(i < colNames.size() && j < 1){
-                    Celula celula = new Celula(currentX, currentY, width, height, root, colNames.get(i));
-                    coluna.add(celula);
-                }
-                else{
-                    Celula celula = new Celula(currentX, currentY, width, height, root, valores.get(i));
-                    coluna.add(celula);
-                }
+    tableLabel = new Text(startX, startY - 10, name);
+    tableLabel.setFont(Font.font(16));
+    tableLabel.setFill(Color.DARKBLUE);
+    root.getChildren().add(tableLabel);
+    tableLabel.setOnMousePressed(event -> {
+    dragOffsetX = event.getSceneX();
+    dragOffsetY = event.getSceneY();
+    });
+
+    tableLabel.setOnMouseDragged(event -> {
+    double deltaX = event.getSceneX() - dragOffsetX;
+    double deltaY = event.getSceneY() - dragOffsetY;
+
+    dragOffsetX = event.getSceneX();
+    dragOffsetY = event.getSceneY();
+
+    moveTable(deltaX, deltaY);
+    });
+
+    for (int i = 0; i < numCols; i++) {
+        int currentX = startX + i * (width + Xpadding);
+        List<Celula> coluna = new ArrayList<>();
+
+        for (int j = 0; j < numRows; j++) {
+            int currentY = startY + j * (height + Ypadding);
+
+            Celula celula;
+            if (j == 0) {
+                celula = new Celula(currentX, currentY, width, height, root, colNames.get(i));
+            } else {
+                int index = (j - 1) * numCols + i;
+                celula = new Celula(currentX, currentY, width, height, root, valores.get(index));
             }
-            tabelaList.add(coluna);
+
+            coluna.add(celula);
         }
-    } // We are going to have to include abilities into this in the future
+
+        tabelaList.add(coluna);
+    }
+}
+
+    private void moveTable(double deltaX, double deltaY) {
+    for (List<Celula> coluna : tabelaList) {
+        for (Celula celula : coluna) {
+            celula.moveBy(deltaX, deltaY);
+        }
+    }
+
+    if (tableLabel != null) {
+        tableLabel.setLayoutX(tableLabel.getLayoutX() + deltaX);
+        tableLabel.setLayoutY(tableLabel.getLayoutY() + deltaY);
+    }
+}
 
 
     public void tabelaFromResultSet(ResultSet rs, AnchorPane root, int startX, int startY, int width, int height, String name) throws SQLException {
         ResultSetMetaData meta = rs.getMetaData();
         int colCount = meta.getColumnCount();
+
+    tableLabel = new Text(startX, startY - 10, "Results");
+    tableLabel.setFont(Font.font(16));
+    tableLabel.setFill(Color.DARKBLUE);
+    root.getChildren().add(tableLabel);
+    tableLabel.setOnMousePressed(event -> {
+    dragOffsetX = event.getSceneX();
+    dragOffsetY = event.getSceneY();
+    });
+
+    tableLabel.setOnMouseDragged(event -> {
+    double deltaX = event.getSceneX() - dragOffsetX;
+    double deltaY = event.getSceneY() - dragOffsetY;
+
+    dragOffsetX = event.getSceneX();
+    dragOffsetY = event.getSceneY();
+
+    moveTable(deltaX, deltaY);
+    });
 
         List<String> colNames = new ArrayList<>();
         for (int i = 1; i <= colCount; i++) {
@@ -138,6 +220,7 @@ public class Tabela {
                 System.out.println(coluna.size());
             }
         }
+        root.getChildren().remove(this.tableLabel);
     }
     public void saveTabelaInfo(){
 
@@ -195,8 +278,21 @@ public class Tabela {
     }
 }
 
-    public void score() {
+    public void score() throws InterruptedException {
+        List<List<Celula>> list = this.getList();
+        int score = 0;
+        for(int i = 0; i < list.size(); i++){
+            List<Celula> coluna = list.get(i);
+            for(int j = 0; j < coluna.size(); j++){
+                score += coluna.get(i).getValor();
+            }
+        }
 
+        // scoreboard.setScore(score);
+        // wait(3000);
+        // if(score > scoreboard.getThreshold()){
+        //     scoreboard.setThreshold(scoreboard.getThreshold() + score/2);
+        // }
     }
 
     public List<List<Celula>> getList(){
