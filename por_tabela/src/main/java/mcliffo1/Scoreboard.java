@@ -51,15 +51,18 @@ public class Scoreboard {
 public void roundWinCheck() {
     if (this.score > this.threshold) {
         this.scoreboard.setStyle("-fx-background-color: rgba(121, 249, 42, 0.6); -fx-padding: 10; -fx-background-radius: 8;");
-
+        
         PauseTransition pause = new PauseTransition(Duration.seconds(3));
         pause.setOnFinished(event -> {
-            this.setThreshold(threshold + score / 2);
+            this.setThreshold(threshold + score / 2); //maybe like set tablevalue * (0.5 + (0.1*roundnum))
             this.score = 0;
             this.scoreText.setText(score + " / " + threshold);
             scoreboard.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-padding: 10; -fx-background-radius: 8;");
+            //onWinTableUpgrade
         });
         pause.play();
+        //right here we call tabela.upgrade() hopefully that doesn't get fucky with the sqlExectutor might need to give
+        // tabela a function that interfaces with executor
 
     } else {
         this.scoreboard.setStyle("-fx-background-color: rgba(243, 49, 27, 0.6); -fx-padding: 10; -fx-background-radius: 8;");
@@ -72,6 +75,10 @@ public void roundWinCheck() {
         pause.play();
     }
 }
+    public void onWinTableUpgrade(){
+        //create three buttons in the middle of the screen, row, column, and item, with visualizations!
+        // the user clicks them, and gets one of them. An item at random, or just calls tabela.updateTable
+    }
 
     public int getScore(){
         return score;

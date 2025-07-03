@@ -136,7 +136,11 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard) {
     int total = 0;
 
     for (List<Celula> col : data) {
+        //Count colnum
         for (int i = 1; i < col.size(); i++) { // skip header
+            // If cell has item, apply item effect? maybe a little animation? Maybe we say item.applyeffect(rowNum, colNum, num intable
+            // diag crazyness, etc.)
+            //Can also animate cells here?
             total += col.get(i).getValor();
         }
     }

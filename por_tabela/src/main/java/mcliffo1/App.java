@@ -37,19 +37,13 @@ public class App extends Application {
 
     public void load() throws SQLException{ // TODO: Add a incialize assets in the future that handles the first few lines of load.
         Tabela tabela = new Tabela(root, "Tabela");
-        tabela.gerarTabela(5, 15, 1000,300, 60, 20);
+        tabela.gerarTabela(5, 5, 1000,300, 60, 20);
         PlayerCharacter player = new PlayerCharacter(root);
         Scoreboard scoreboard = new Scoreboard(root);
-        //ConsultaUI consultaUI = new ConsultaUI(root, tabela);
         SqlExecutor sqlExec = new SqlExecutor(root, scoreboard);
         sqlExec.populateFromTabela(tabela);
-        //ResultSet rs = sqlExec.runQuery("SELECT Height, Width FROM tabela WHERE Length > 50");
-        //Tabela filteredTabela = new Tabela(root, "tabResultado");
-        //filteredTabela.tabelaFromResultSet(rs, root, 700, 100, 60, 20, "QueryResult");
+        //tabela.updateTable(true);
 
-
-
-        //tabela.consultaV1(indices, 15, 2, false);
     }
     
 }

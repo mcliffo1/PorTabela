@@ -26,6 +26,8 @@ public class Tabela {
     private double dragOffsetY;
     private Text tableLabel;
 
+
+
     public Tabela(AnchorPane root, String name) {
         tabelaList = new ArrayList<>();
         this.root = root;
@@ -55,58 +57,68 @@ public class Tabela {
 
 
     public void gerarTabela(int dimX, int dimY, int startX, int startY, int width, int height) {
-        int Xpadding = 1;
-        int Ypadding = 1;
-        this.random = new Random();
-        tabelaList = new ArrayList<>();
-        colNames = new ArrayList<>();
-        colNames.add("Name");
-        colNames.add("Height");
-        colNames.add("Length");
-        colNames.add("Width");
-        colNames.add("Shape");
-        // Make this better
-        
-        tableLabel = new Text(startX, startY - 10, name);
-        tableLabel.setFont(Font.font(16));
-        tableLabel.setFill(Color.DARKBLUE);
-        root.getChildren().add(tableLabel);
+    int Xpadding = 1;
+    int Ypadding = 1;
+    this.random = new Random();
+    tabelaList = new ArrayList<>();
 
-        tableLabel.setOnMousePressed(event -> {
-    dragOffsetX = event.getSceneX();
-    dragOffsetY = event.getSceneY();
+    // Default name pool to choose from
+    String[] defaultNames = {"Name", "Height", "Length", "Width", "Shape", "Weight", "Color", "Depth", "Volume", "Mass"};
+
+    // Randomly assign column names from the list
+    colNames = new ArrayList<>();
+    for (int i = 0; i < dimX; i++) {
+        String randomName = defaultNames[random.nextInt(defaultNames.length)];
+        // Optional: ensure uniqueness
+        while (colNames.contains(randomName)) {
+            randomName = defaultNames[random.nextInt(defaultNames.length)];
+        }
+        colNames.add(randomName);
+    }
+
+    // Add draggable label
+    tableLabel = new Text(startX, startY - 10, name);
+    tableLabel.setFont(Font.font(16));
+    tableLabel.setFill(Color.DARKBLUE);
+    root.getChildren().add(tableLabel);
+
+    tableLabel.setOnMousePressed(event -> {
+        dragOffsetX = event.getSceneX();
+        dragOffsetY = event.getSceneY();
     });
 
     tableLabel.setOnMouseDragged(event -> {
-    double deltaX = event.getSceneX() - dragOffsetX;
-    double deltaY = event.getSceneY() - dragOffsetY;
+        double deltaX = event.getSceneX() - dragOffsetX;
+        double deltaY = event.getSceneY() - dragOffsetY;
 
-    dragOffsetX = event.getSceneX();
-    dragOffsetY = event.getSceneY();
+        dragOffsetX = event.getSceneX();
+        dragOffsetY = event.getSceneY();
 
-    moveTable(deltaX, deltaY);
+        moveTable(deltaX, deltaY);
     });
 
-        for (int i = 0; i < dimX; i++) {
-            int currentX = startX + i * (width + Xpadding);
+    // Create the actual table with headers and data
+    for (int i = 0; i < dimX; i++) {
+        int currentX = startX + i * (width + Xpadding);
+        List<Celula> coluna = new ArrayList<>();
 
-            List<Celula> coluna = new ArrayList<>();
+        for (int j = 0; j < dimY; j++) {
+            int currentY = startY + j * (height + Ypadding);
+            Celula celula;
 
-            for (int j = 0; j < dimY; j++) {
-                int currentY = startY + j * (height + Ypadding);
-                if(i < dimX && j < 1){
-                    Celula celula = new Celula(currentX, currentY, width, height, root, colNames.get(i));
-                    coluna.add(celula);
-                }
-                else{
-                    Celula celula = new Celula(currentX, currentY, width, height, root, random.nextInt(100));
-                    coluna.add(celula);
-                }
+            if (j == 0) {
+                celula = new Celula(currentX, currentY, width, height, root, colNames.get(i)); // Header
+            } else {
+                celula = new Celula(currentX, currentY, width, height, root, random.nextInt(100)); // Random value
             }
-            tabelaList.add(coluna);
+
+            coluna.add(celula);
         }
 
+        tabelaList.add(coluna);
     }
+}
+
     public void tabelaFromList(int startX, int startY, int width, int height, List<String> colNamesInput, List<Integer> valores) {
     tabelaList = new ArrayList<>();
     colNames = colNamesInput;
@@ -171,44 +183,44 @@ public class Tabela {
 }
 
 
-    public void tabelaFromResultSet(ResultSet rs, AnchorPane root, int startX, int startY, int width, int height, String name) throws SQLException {
-        ResultSetMetaData meta = rs.getMetaData();
-        int colCount = meta.getColumnCount();
+    // public void tabelaFromResultSet(ResultSet rs, AnchorPane root, int startX, int startY, int width, int height, String name) throws SQLException {
+    //     ResultSetMetaData meta = rs.getMetaData();
+    //     int colCount = meta.getColumnCount();
 
-    tableLabel = new Text(startX, startY - 10, "Results");
-    tableLabel.setFont(Font.font(16));
-    tableLabel.setFill(Color.DARKBLUE);
-    root.getChildren().add(tableLabel);
-    tableLabel.setOnMousePressed(event -> {
-    dragOffsetX = event.getSceneX();
-    dragOffsetY = event.getSceneY();
-    });
+    // tableLabel = new Text(startX, startY - 10, "Results");
+    // tableLabel.setFont(Font.font(16));
+    // tableLabel.setFill(Color.DARKBLUE);
+    // root.getChildren().add(tableLabel);
+    // tableLabel.setOnMousePressed(event -> {
+    // dragOffsetX = event.getSceneX();
+    // dragOffsetY = event.getSceneY();
+    // });
 
-    tableLabel.setOnMouseDragged(event -> {
-    double deltaX = event.getSceneX() - dragOffsetX;
-    double deltaY = event.getSceneY() - dragOffsetY;
+    // tableLabel.setOnMouseDragged(event -> {
+    // double deltaX = event.getSceneX() - dragOffsetX;
+    // double deltaY = event.getSceneY() - dragOffsetY;
 
-    dragOffsetX = event.getSceneX();
-    dragOffsetY = event.getSceneY();
+    // dragOffsetX = event.getSceneX();
+    // dragOffsetY = event.getSceneY();
 
-    moveTable(deltaX, deltaY);
-    });
+    // moveTable(deltaX, deltaY);
+    // });
 
-        List<String> colNames = new ArrayList<>();
-        for (int i = 1; i <= colCount; i++) {
-            colNames.add(meta.getColumnName(i));
-        }
+    //     List<String> colNames = new ArrayList<>();
+    //     for (int i = 1; i <= colCount; i++) {
+    //         colNames.add(meta.getColumnName(i));
+    //     }
 
-        List<Integer> allVals = new ArrayList<>();
-        while (rs.next()) {
-            for (int i = 1; i <= colCount; i++) {
-                allVals.add(rs.getInt(i));
-            }
-        }
+    //     List<Integer> allVals = new ArrayList<>();
+    //     while (rs.next()) {
+    //         for (int i = 1; i <= colCount; i++) {
+    //             allVals.add(rs.getInt(i));
+    //         }
+    //     }
 
-        Tabela newTabela = new Tabela(root, name);
-        newTabela.tabelaFromList(startX, startY, width, height, colNames, allVals);
-    }
+    //     Tabela newTabela = new Tabela(root, name);
+    //     newTabela.tabelaFromList(startX, startY, width, height, colNames, allVals);
+    // }
 
 
     public void dropTables(){
@@ -230,54 +242,7 @@ public class Tabela {
         return colNames;
     }
 
-   public void consultaV1(List<Integer> SelectCols, int criteria, int criteriaColuna, boolean higherLower) {
-    // Validate criteria column
-    if (criteriaColuna < 0 || criteriaColuna >= tabelaList.size()) {
-        System.out.println("Invalid criteria column index.");
-        return;
-    }
-
-    // STEP 1: Determine which rows satisfy the condition (excluding header row)
-    List<Integer> validRows = new ArrayList<>();
-    validRows.add(0); // Always keep header row
-    for (int rowIndex = 1; rowIndex < tabelaList.get(0).size(); rowIndex++) {
-        Celula criteriaCell = tabelaList.get(criteriaColuna).get(rowIndex);
-        int value = criteriaCell.getValor();
-        boolean condition = false;
-
-        if (higherLower && value > criteria) condition = true;
-        else if (!higherLower && value < criteria) condition = true;
-        else if (value == criteria) condition = true;
-
-        if (condition) {
-            validRows.add(rowIndex);
-        }
-    }
-
-    // STEP 2: Remove all rows NOT in validRows from each column
-    for (List<Celula> coluna : tabelaList) {
-        for (int rowIndex = coluna.size() - 1; rowIndex >= 0; rowIndex--) {
-            if (!validRows.contains(rowIndex)) {
-                Celula cellToRemove = coluna.remove(rowIndex);
-                root.getChildren().removeAll(cellToRemove.getShape(), cellToRemove.getText());
-            }
-        }
-    }
-
-    // STEP 3: Remove columns NOT in SelectCols
-    for (int colIndex = tabelaList.size() - 1; colIndex >= 0; colIndex--) {
-        if (!SelectCols.contains(colIndex)) {
-            List<Celula> columnToRemove = tabelaList.remove(colIndex);
-            for (Celula celula : columnToRemove) {
-                root.getChildren().removeAll(celula.getShape(), celula.getText());
-            }
-            if (colNames != null && colIndex < colNames.size()) {
-                colNames.remove(colIndex);
-            }
-        }
-    }
-}
-
+   
     public void score() throws InterruptedException {
         List<List<Celula>> list = this.getList();
         int score = 0;
@@ -287,12 +252,6 @@ public class Tabela {
                 score += coluna.get(i).getValor();
             }
         }
-
-        // scoreboard.setScore(score);
-        // wait(3000);
-        // if(score > scoreboard.getThreshold()){
-        //     scoreboard.setThreshold(scoreboard.getThreshold() + score/2);
-        // }
     }
 
     public List<List<Celula>> getList(){
@@ -303,8 +262,72 @@ public class Tabela {
         tabelaList = list;
     }
 
+public void updateTable(Boolean rowOrColumn) {
+    if (tabelaList == null || tabelaList.isEmpty()) return;
 
-    public void removeRow(int rowNum) {
+    int numCols = tabelaList.size();
+    int numRows = tabelaList.get(0).size(); // includes header
+
+    List<Integer> updatedValues = new ArrayList<>();
+
+    Random rand = new Random();
+
+    if (rowOrColumn) {
+        // ADD ROW
+        for (int col = 0; col < numCols; col++) {
+            for (int row = 1; row < numRows; row++) {
+                updatedValues.add(tabelaList.get(col).get(row).getValor());
+            }
+        }
+
+        // Add one new row of random values
+        for (int i = 0; i < numCols; i++) {
+            updatedValues.add(rand.nextInt(100)); // random value
+        }
+
+    } else {
+        // ADD COLUMN
+        for (int col = 0; col < numCols; col++) {
+            for (int row = 1; row < numRows; row++) {
+                updatedValues.add(tabelaList.get(col).get(row).getValor());
+            }
+        }
+
+        // New column values
+        for (int row = 1; row < numRows; row++) {
+            updatedValues.add(rand.nextInt(100));
+        }
+
+        // Add new column name
+        colNames.add("Col" + (colNames.size() + 1));
+    }
+
+    // Drop old table visuals
+    dropTables();
+
+    // Determine new dimensions
+    int newNumCols = rowOrColumn ? numCols : numCols + 1;
+    int newNumRows = rowOrColumn ? numRows + 1 : numRows;
+
+    // Rebuild with same cell dimensions and starting location (change if needed)
+    int cellWidth = 60;
+    int cellHeight = 20;
+    int startX = 800;
+    int startY = 200;
+
+    // Recreate table
+    tabelaFromList(startX, startY, cellWidth, cellHeight, colNames, updatedValues);
+}
+
+
+
+
+
+
+
+
+
+    public void removeRow(int rowNum) { // Antiquated
     // Validate row index
     if (rowNum < 0 || tabelaList.isEmpty() || rowNum >= tabelaList.get(0).size()) {
         System.out.println("Invalid row number.");
@@ -325,7 +348,7 @@ public class Tabela {
     }
 }
 
-public void removeColumn(int colNum) {
+public void removeColumn(int colNum) { // Antiquated
     // Validate column index
     if (colNum < 0 || colNum >= tabelaList.size()) {
         System.out.println("Invalid column number.");
