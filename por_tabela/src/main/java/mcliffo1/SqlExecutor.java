@@ -14,11 +14,13 @@ public class SqlExecutor {
     private Tabela outputTable;
     private AnchorPane root;
     private TextArea sqlInput;
+    private PlayerCharacter character;
 private Scoreboard scoreboard;
 
-public SqlExecutor(AnchorPane root, Scoreboard scoreboard) {
+public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter character) {
     this.root = root;
     this.scoreboard = scoreboard;
+    this.character = character;
     try {
         conn = DriverManager.getConnection("jdbc:h2:mem:");
     } catch (SQLException e) {
@@ -100,6 +102,7 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard) {
     }
 
     public void runQuery(String query) throws SQLException, InterruptedException {
+        this.character.setText(query);
         Statement stmt = conn.createStatement();
         boolean hasResultSet = stmt.execute(query);
 

@@ -32,6 +32,7 @@ public class Tabela {
         tabelaList = new ArrayList<>();
         this.root = root;
         this.name = name;
+        root.getProperties().put("mainTable", this);
     }
     
     //TODO: Dar valores aleatorios
@@ -229,7 +230,7 @@ public class Tabela {
             List<Celula> coluna = list.get(i);
             for(int j = 0; j < coluna.size(); j++){
                 root.getChildren().removeAll(coluna.get(j).getShape(), coluna.get(j).getText());
-                System.out.println(coluna.size());
+                //System.out.println(coluna.size());
             }
         }
         root.getChildren().remove(this.tableLabel);
@@ -243,16 +244,16 @@ public class Tabela {
     }
 
    
-    public void score() throws InterruptedException {
-        List<List<Celula>> list = this.getList();
-        int score = 0;
-        for(int i = 0; i < list.size(); i++){
-            List<Celula> coluna = list.get(i);
-            for(int j = 0; j < coluna.size(); j++){
-                score += coluna.get(i).getValor();
-            }
+public int score() {
+    int score = 0;
+    for (List<Celula> coluna : tabelaList) {
+        // Start at j = 1 if you want to skip the header row (which holds the name)
+        for (int j = 1; j < coluna.size(); j++) {
+            score += coluna.get(j).getValor();
         }
     }
+    return score;
+}
 
     public List<List<Celula>> getList(){
         return tabelaList;

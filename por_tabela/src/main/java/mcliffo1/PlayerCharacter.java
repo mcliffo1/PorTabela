@@ -10,8 +10,9 @@ import javafx.scene.paint.Color;
 
 
 public class PlayerCharacter {
-    
+    private Text text;
     PlayerCharacter(AnchorPane root){
+        
         Group stickFigureGroup = new Group();
         
         Circle head = new Circle(20, 20, 15);
@@ -45,12 +46,12 @@ public class PlayerCharacter {
         160.0, -40.0,
         130.0, -10.0,
         120.0, -40.0
-        );
+        ); //TODO: Make the bubble better fit queries.
 
         bubble.setFill(Color.LIGHTYELLOW);
         bubble.setStroke(Color.BLACK);
 
-        Text text = new Text(110, -110, "Placeholder.txt");
+        this.text = new Text(110, -110, "Placeholder.txt");
         text.setFill(Color.BLACK);
         text.setStyle("-fx-font-size: 18px;");
 
@@ -61,6 +62,12 @@ public class PlayerCharacter {
         stickFigureGroup.setLayoutY(800 - 100 - padding - 150);
 
         root.getChildren().add(stickFigureGroup);
+        root.getProperties().put("PlayerCharacter", this);
         }
         // TODO: Methods: SetText, AnimatePlayer
+        
+        
+    public void setText(String text){
+        this.text.setText(text);
+    }
 }

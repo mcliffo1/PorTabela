@@ -58,7 +58,7 @@ public class Celula {
     celula.setY(celula.getY() + dy);
     texto.setX(texto.getX() + dx);
     texto.setY(texto.getY() + dy);
-    //itemVisual.setx...
+    //itemVisual.setx...?
 
     }
 

@@ -35,12 +35,12 @@ public class App extends Application {
 
     }
 
-    public void load() throws SQLException{ // TODO: Add a incialize assets in the future that handles the first few lines of load.
+    public void load() throws SQLException{ // TODO: Add a inicialize assets in the future that handles the first few lines of load.
         Tabela tabela = new Tabela(root, "Tabela");
         tabela.gerarTabela(5, 5, 1000,300, 60, 20);
         PlayerCharacter player = new PlayerCharacter(root);
         Scoreboard scoreboard = new Scoreboard(root);
-        SqlExecutor sqlExec = new SqlExecutor(root, scoreboard);
+        SqlExecutor sqlExec = new SqlExecutor(root, scoreboard, player);
         sqlExec.populateFromTabela(tabela);
         //tabela.updateTable(true);
 
