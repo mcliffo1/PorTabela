@@ -1,35 +1,36 @@
 package mcliffo1;
 
+import javafx.animation.FillTransition;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
-
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SqlExecutor {
     private Connection conn;
     private Tabela outputTable;
+    private Tabela sourceTable;
     private AnchorPane root;
     private TextArea sqlInput;
     private PlayerCharacter character;
-private Scoreboard scoreboard;
+    private Scoreboard scoreboard;
 
-public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter character) {
-    root.getProperties().put("sqlExecutor", this);
-    this.root = root;
-    this.scoreboard = scoreboard;
-    this.character = character;
-    try {
-        conn = DriverManager.getConnection("jdbc:h2:mem:");
-    } catch (SQLException e) {
-        e.printStackTrace();
+    public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter character) {
+        root.getProperties().put("sqlExecutor", this);
+        this.root = root;
+        this.scoreboard = scoreboard;
+        this.character = character;
+        try {
+            conn = DriverManager.getConnection("jdbc:h2:mem:");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        setupUI();
     }
-    setupUI();
-}
-
 
     private void setupUI() {
         sqlInput = new TextArea();
@@ -46,11 +47,8 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter chara
             String query = sqlInput.getText();
             try {
                 runQuery(query);
-            } catch (SQLException ex) {
+            } catch (SQLException | InterruptedException ex) {
                 ex.printStackTrace();
-            } catch (InterruptedException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
             }
         });
 
@@ -59,6 +57,8 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter chara
 
     public void populateFromTabela(Tabela input) {
         try {
+            this.sourceTable = input;
+
             Statement stmt = conn.createStatement();
             stmt.execute("DROP TABLE IF EXISTS " + input.getTableName());
 
@@ -104,7 +104,7 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter chara
 
     public void runQuery(String query) throws SQLException, InterruptedException {
         this.character.setText(query);
-        Statement stmt = conn.createStatement();
+        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
         boolean hasResultSet = stmt.execute(query);
 
         if (!hasResultSet) return;
@@ -117,6 +117,20 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter chara
             colNames.add(meta.getColumnName(i));
         }
 
+        List<int[]> matchedPositions = new ArrayList<>();
+        int currentRow = 0;
+        while (rs.next()) {
+            for (int i = 1; i <= meta.getColumnCount(); i++) {
+                matchedPositions.add(new int[]{currentRow, i - 1});
+            }
+            currentRow++;
+        }
+
+        if (outputTable != null) {
+            outputTable.dropTables();
+        }
+
+        rs.beforeFirst();
         List<Integer> flatValues = new ArrayList<>();
         while (rs.next()) {
             for (int i = 1; i <= meta.getColumnCount(); i++) {
@@ -124,34 +138,51 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter chara
             }
         }
 
-        if (outputTable != null) {
-            outputTable.dropTables();
-        }
-
         outputTable = new Tabela(root, "RESULT");
         outputTable.tabelaFromList(500, 30, 60, 20, colNames, flatValues);
-        //updateScoreFromResult();
+
         scoreboard.setScore(outputTable.score());
+        highlightOriginalTableCells(matchedPositions);
     }
 
-    public void updateScoreFromResult() throws InterruptedException { // Antiquated//
-    if (outputTable == null) return;
+    private void highlightOriginalTableCells(List<int[]> matchedPositions) {
+        if (sourceTable == null) return;
 
-    List<List<Celula>> data = outputTable.getList();
-    int total = 0;
+        Set<String> matchedKeys = new HashSet<>();
+        for (int[] pos : matchedPositions) {
+            matchedKeys.add(pos[0] + "," + pos[1]);
+        }
 
-    for (List<Celula> col : data) {
-        //Count colnum
-        for (int i = 1; i < col.size(); i++) { // skip header
-            // If cell has item, apply item effect? maybe a little animation? Maybe we say item.applyeffect(rowNum, colNum, num intable
-            // diag crazyness, etc.)
-            //Can also animate cells here?
-            total += col.get(i).getValor();
+        List<List<Celula>> tableData = sourceTable.getList();
+        for (int col = 0; col < tableData.size(); col++) {
+            List<Celula> column = tableData.get(col);
+            for (int row = 1; row < column.size(); row++) {
+                String key = (row - 1) + "," + col;
+                Color color = matchedKeys.contains(key) ? Color.LIGHTGREEN : Color.SALMON;
+                animateFill(column.get(row).getShape(), color);
+            }
         }
     }
-    
-        scoreboard.setScore(total);
+
+    private void animateFill(javafx.scene.shape.Shape shape, Color color) {
+        FillTransition ft = new FillTransition(Duration.millis(600), shape);
+        ft.setToValue(color);
+        ft.setCycleCount(1);
+        ft.play();
     }
 
+    public void updateScoreFromResult() throws InterruptedException {
+        if (outputTable == null) return;
 
+        List<List<Celula>> data = outputTable.getList();
+        int total = 0;
+
+        for (List<Celula> col : data) {
+            for (int i = 1; i < col.size(); i++) {
+                total += col.get(i).getValor();
+            }
+        }
+
+        scoreboard.setScore(total);
+    }
 }
