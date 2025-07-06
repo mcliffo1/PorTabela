@@ -41,6 +41,7 @@ public class App extends Application {
         PlayerCharacter player = new PlayerCharacter(root);
         Scoreboard scoreboard = new Scoreboard(root);
         SqlExecutor sqlExec = new SqlExecutor(root, scoreboard, player);
+        ItemManager itemManager = new ItemManager(root);
         sqlExec.populateFromTabela(tabela); // this could technically be done with the root calls 
 
     }

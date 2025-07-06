@@ -19,11 +19,14 @@ public class Scoreboard {
     private PlayerCharacter player;
     private Tabela table;
     private int round;
+    private AnchorPane root;
+    private ItemManager items;
  
     Scoreboard(AnchorPane root){
         this.scoreboard = new VBox();
         this.player = (PlayerCharacter) root.getProperties().get("PlayerCharacter");
         this.table = (Tabela) root.getProperties().get("mainTable");
+        this.root = root;
         scoreboard.setStyle("-fx-background-color: rgba(0,0,0,0.6); -fx-padding: 10; -fx-background-radius: 8;");
         scoreboard.setPrefWidth(150);
         this.round = 0;
@@ -88,6 +91,9 @@ public void roundWinCheck() {
 
 public void onWinTableUpgrade() {
     VBox upgradeBox = new VBox(20);
+
+    this.items = (ItemManager) root.getProperties().get("itemManager");
+
     upgradeBox.setAlignment(Pos.CENTER);
     upgradeBox.setStyle(
         "-fx-background-color: rgba(144,238,144,0.95); " + // light green
@@ -107,7 +113,7 @@ public void onWinTableUpgrade() {
     // Buttons (2.5x larger)
     Button rowButton = new Button("Add Row");
     Button colButton = new Button("Add Column");
-    Button itemButton = new Button("Item (Coming Soon)");
+    Button itemButton = new Button("Item");
 
     rowButton.setPrefSize(250, 50);
     colButton.setPrefSize(250, 50);
@@ -134,8 +140,9 @@ public void onWinTableUpgrade() {
     });
 
     itemButton.setOnAction(e -> {
-        System.out.println("Item reward coming soon!");
+        //System.out.println("Item reward coming soon!");
         scoreboard.getChildren().remove(upgradeBox);
+        items.showItemSelection(root);
     });
 }
 
