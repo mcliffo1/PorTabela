@@ -1,6 +1,8 @@
 package mcliffo1;
 
 import javafx.animation.FillTransition;
+import javafx.animation.PauseTransition;
+import javafx.animation.ScaleTransition;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
@@ -104,6 +106,7 @@ public class SqlExecutor {
 
     public void runQuery(String query) throws SQLException, InterruptedException {
         this.character.setText(query);
+
         Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
         boolean hasResultSet = stmt.execute(query);
 
@@ -117,17 +120,12 @@ public class SqlExecutor {
             colNames.add(meta.getColumnName(i));
         }
 
-        List<int[]> matchedPositions = new ArrayList<>();
-        int currentRow = 0;
+        Set<Integer> resultValues = new HashSet<>();
+        rs.beforeFirst();
         while (rs.next()) {
             for (int i = 1; i <= meta.getColumnCount(); i++) {
-                matchedPositions.add(new int[]{currentRow, i - 1});
+                resultValues.add(rs.getInt(i));
             }
-            currentRow++;
-        }
-
-        if (outputTable != null) {
-            outputTable.dropTables();
         }
 
         rs.beforeFirst();
@@ -138,37 +136,56 @@ public class SqlExecutor {
             }
         }
 
+        if (outputTable != null) {
+            outputTable.dropTables();
+        }
+
         outputTable = new Tabela(root, "RESULT");
         outputTable.tabelaFromList(500, 30, 60, 20, colNames, flatValues);
 
         scoreboard.setScore(outputTable.score());
-        highlightOriginalTableCells(matchedPositions);
+        highlightMatchingCells(resultValues);
     }
 
-    private void highlightOriginalTableCells(List<int[]> matchedPositions) {
+    private void highlightMatchingCells(Set<Integer> resultValues) {
         if (sourceTable == null) return;
 
-        Set<String> matchedKeys = new HashSet<>();
-        for (int[] pos : matchedPositions) {
-            matchedKeys.add(pos[0] + "," + pos[1]);
-        }
-
-        List<List<Celula>> tableData = sourceTable.getList();
-        for (int col = 0; col < tableData.size(); col++) {
-            List<Celula> column = tableData.get(col);
-            for (int row = 1; row < column.size(); row++) {
-                String key = (row - 1) + "," + col;
-                Color color = matchedKeys.contains(key) ? Color.LIGHTGREEN : Color.SALMON;
-                animateFill(column.get(row).getShape(), color);
+        List<List<Celula>> data = sourceTable.getList();
+        for (List<Celula> column : data) {
+            for (int i = 1; i < column.size(); i++) {
+                Celula cell = column.get(i);
+                int value = cell.getValor();
+                Color color = resultValues.contains(value) ? Color.LIGHTGREEN : Color.SALMON;
+                animateHighlight(cell.getShape(), color);
             }
         }
     }
 
-    private void animateFill(javafx.scene.shape.Shape shape, Color color) {
-        FillTransition ft = new FillTransition(Duration.millis(600), shape);
-        ft.setToValue(color);
-        ft.setCycleCount(1);
-        ft.play();
+    private void animateHighlight(javafx.scene.shape.Shape shape, Color highlightColor) {
+        FillTransition fill = new FillTransition(Duration.millis(500), shape);
+        fill.setToValue(highlightColor);
+
+        ScaleTransition scale = new ScaleTransition(Duration.millis(500), shape);
+        scale.setToX(1.2);
+        scale.setToY(1.2);
+
+        fill.setOnFinished(e -> {
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
+            pause.setOnFinished(ev -> {
+                FillTransition restoreFill = new FillTransition(Duration.millis(500), shape);
+                restoreFill.setToValue(Color.GRAY);
+                restoreFill.play();
+
+                ScaleTransition restoreScale = new ScaleTransition(Duration.millis(500), shape);
+                restoreScale.setToX(1);
+                restoreScale.setToY(1);
+                restoreScale.play();
+            });
+            pause.play();
+        });
+
+        fill.play();
+        scale.play();
     }
 
     public void updateScoreFromResult() throws InterruptedException {
