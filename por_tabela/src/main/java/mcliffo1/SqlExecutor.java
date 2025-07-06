@@ -18,6 +18,7 @@ public class SqlExecutor {
 private Scoreboard scoreboard;
 
 public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter character) {
+    root.getProperties().put("sqlExecutor", this);
     this.root = root;
     this.scoreboard = scoreboard;
     this.character = character;
@@ -129,10 +130,11 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter chara
 
         outputTable = new Tabela(root, "RESULT");
         outputTable.tabelaFromList(500, 30, 60, 20, colNames, flatValues);
-        updateScoreFromResult();
+        //updateScoreFromResult();
+        scoreboard.setScore(outputTable.score());
     }
 
-    public void updateScoreFromResult() throws InterruptedException {
+    public void updateScoreFromResult() throws InterruptedException { // Antiquated//
     if (outputTable == null) return;
 
     List<List<Celula>> data = outputTable.getList();
@@ -149,16 +151,7 @@ public SqlExecutor(AnchorPane root, Scoreboard scoreboard, PlayerCharacter chara
     }
     
         scoreboard.setScore(total);
-
-}
-
+    }
 
 
-    // public void runQueryProgrammatically(String query) {
-    //     try {
-    //         runQuery(query);
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 }
