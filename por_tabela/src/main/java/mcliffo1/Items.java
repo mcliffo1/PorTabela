@@ -17,6 +17,8 @@ public abstract class Items {
 
     public String getName() { return name; }
     public String getDescription() { return description; }
+    public abstract String getImagePath();
+
 
     // Called when item is activated (e.g. after a round win)
     public abstract void applyEffect();

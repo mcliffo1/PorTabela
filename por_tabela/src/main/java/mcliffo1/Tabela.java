@@ -243,20 +243,28 @@ public class Tabela {
         return colNames;
     }
 
-   
-public int score() {
+
+    public int score() {
+    ItemManager itemManager = (ItemManager) root.getProperties().get("itemManager");
+    List<Items> activeItems = itemManager.getItems();
     int score = 0;
-    for (List<Celula> coluna : tabelaList) {
-        // Start at j = 1 if you want to skip the header row (which holds the name)
-        // If cell has item, apply item effect? maybe a little animation? Maybe we say item.applyeffect(rowNum, colNum, num intable
-        // diag crazyness, etc.)
-        //Can also animate cells here?
-        for (int j = 1; j < coluna.size(); j++) {
-            score += coluna.get(j).getValor();
+
+    for (int colNum = 0; colNum < tabelaList.size(); colNum++) {
+        List<Celula> coluna = tabelaList.get(colNum);
+
+        for (int rowNum = 1; rowNum < coluna.size(); rowNum++) {
+            int valor = coluna.get(rowNum).getValor();
+
+            for (Items item : activeItems) {
+                valor = item.applyScoringEffect(colNum, rowNum, valor);
+            }
+
+            score += valor;
         }
     }
+
     return score;
-}
+    }
 
     public List<List<Celula>> getList(){
         return tabelaList;

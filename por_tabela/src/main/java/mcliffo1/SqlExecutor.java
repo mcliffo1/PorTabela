@@ -188,7 +188,7 @@ public class SqlExecutor {
         scale.play();
     }
 
-    public void updateScoreFromResult() throws InterruptedException {
+    public void updateScoreFromResult() throws InterruptedException { // antiquated
         if (outputTable == null) return;
 
         List<List<Celula>> data = outputTable.getList();

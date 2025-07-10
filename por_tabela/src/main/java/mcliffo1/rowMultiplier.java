@@ -1,10 +1,10 @@
 package mcliffo1;
 
-public class ColumnMultiplier extends Items {
+public class rowMultiplier extends Items {
     private double multiplier;
 
-    public ColumnMultiplier(double multiplier) {
-        super("Odd Column Multiplier", "Increases score of cells in odd columns by " + multiplier + "x for this round.");
+    public rowMultiplier(double multiplier) {
+        super("Even Row Multiplier", "Increases score of cells in odd columns by " + multiplier + "x for this round.");
         this.multiplier = multiplier;
     }
 
@@ -16,7 +16,7 @@ public class ColumnMultiplier extends Items {
 
     @Override
     public int applyScoringEffect(int colNum, int rowNum, int valor) {
-        if (colNum % 2 == 1) {
+        if (rowNum % 2 == 0) {
             valor = (int) (valor * multiplier);
         }
 
@@ -24,7 +24,7 @@ public class ColumnMultiplier extends Items {
     }
     @Override
     public String getImagePath() {
-        return "/Images/ColMult.png";
+        return "/Images/RowMult.png";
     }
 
 }
